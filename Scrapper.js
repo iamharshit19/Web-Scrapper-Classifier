@@ -407,10 +407,10 @@ async function scrapeWebsite(target, folderName, browser, baseOutputDir) {
   fs.mkdirSync(outDir, { recursive: true });
   
   console.log(`\n${'='.repeat(80)}`);
-  console.log(`🎯 Processing: ${folderName}`);
-  console.log(`🌐 URL: ${target}`);
-  console.log(`📁 Output: ${outDir}`);
-  console.log(`📐 Min Resolution: ${MIN_WIDTH}x${MIN_HEIGHT}`);
+  console.log(` Processing: ${folderName}`);
+  console.log(` URL: ${target}`);
+  console.log(` Output: ${outDir}`);
+  console.log(` Min Resolution: ${MIN_WIDTH}x${MIN_HEIGHT}`);
   console.log('='.repeat(80));
   
   try {
@@ -442,29 +442,29 @@ async function scrapeWebsite(target, folderName, browser, baseOutputDir) {
     const networkImgs = new Set();
     setupNetworkCapture(page, networkImgs);
 
-    console.log('🌐 Navigating to page...');
+    console.log(' Navigating to page...');
     
     try {
       await page.goto(target, { waitUntil: 'load', timeout: 60000 });
-      console.log('✓ Page loaded');
+      console.log(' Page loaded');
     } catch (err) {
-      console.log('⚠️  Initial load timeout, trying domcontentloaded...');
+      console.log('  Initial load timeout, trying domcontentloaded...');
       try {
         await page.goto(target, { waitUntil: 'domcontentloaded', timeout: 45000 });
       } catch (err2) {
-        console.log('⚠️  Navigation had issues, continuing anyway...');
+        console.log('  Navigation had issues, continuing anyway...');
       }
     }
 
-    console.log('⏳ Waiting for dynamic content...');
+    console.log(' Waiting for dynamic content...');
     await page.waitForTimeout(3000);
     await waitForImages(page);
     
-    console.log('📜 Scrolling to load lazy content...');
+    console.log(' Scrolling to load lazy content...');
     await autoScroll(page);
     await page.waitForTimeout(2000);
 
-    console.log('🔍 Extracting image URLs...');
+    console.log(' Extracting image URLs...');
     const domResult = await extractFromDOM(page, MIN_WIDTH, MIN_HEIGHT);
     const domImages = domResult.images;
     
@@ -491,17 +491,17 @@ async function scrapeWebsite(target, folderName, browser, baseOutputDir) {
       return true;
     });
 
-    console.log(`\n✨ Found ${images.length} images (≥${MIN_WIDTH}x${MIN_HEIGHT})`);
+    console.log(`\n Found ${images.length} images (≥${MIN_WIDTH}x${MIN_HEIGHT})`);
     if (domResult.stats.filtered > 0) {
-      console.log(`🔍 Filtered out ${domResult.stats.filtered} images below resolution threshold`);
+      console.log(` Filtered out ${domResult.stats.filtered} images below resolution threshold`);
     }
 
     if (images.length === 0) {
-      console.log('\n❌ No images found meeting resolution criteria.');
+      console.log('\n No images found meeting resolution criteria.');
       
       const screenshotPath = path.join(outDir, 'debug-screenshot.png');
       await page.screenshot({ path: screenshotPath, fullPage: true });
-      console.log(`📸 Debug screenshot: ${screenshotPath}`);
+      console.log(` Debug screenshot: ${screenshotPath}`);
       
       await context.close();
       return {
@@ -516,7 +516,7 @@ async function scrapeWebsite(target, folderName, browser, baseOutputDir) {
 
     const cookies = await context.cookies();
 
-    console.log('💾 Downloading images...');
+    console.log(' Downloading images...');
     const limit = pLimit(MAX_CONCURRENT_DOWNLOADS);
     
     const tasks = images.map((url, index) => {
@@ -529,7 +529,7 @@ async function scrapeWebsite(target, folderName, browser, baseOutputDir) {
     const successes = results.filter(r => r.ok);
     const fails = results.filter(r => !r.ok);
 
-    console.log(`\n✅ Downloaded ${successes.length}/${results.length} images`);
+    console.log(`\n Downloaded ${successes.length}/${results.length} images`);
 
     const summary = {
       target,
@@ -558,7 +558,7 @@ async function scrapeWebsite(target, folderName, browser, baseOutputDir) {
     };
     
   } catch (err) {
-    console.error(`\n💥 Error processing ${folderName}:`, err.message);
+    console.error(`\n Error processing ${folderName}:`, err.message);
     return {
       folderName,
       target,
@@ -587,11 +587,11 @@ async function main() {
     const baseOutputDir = argv[1] || './downloads';
     
     if (!fs.existsSync(csvPath)) {
-      console.error(`❌ CSV file not found: ${csvPath}`);
+      console.error(` CSV file not found: ${csvPath}`);
       process.exit(1);
     }
     
-    console.log('📄 Reading CSV file...');
+    console.log('Reading CSV file...');
     const csvContent = fs.readFileSync(csvPath, 'utf-8');
     const records = parse(csvContent, {
       columns: true,
@@ -600,17 +600,17 @@ async function main() {
     });
     
     if (records.length === 0) {
-      console.error('❌ No records found in CSV file');
+      console.error(' No records found in CSV file');
       process.exit(1);
     }
     
-    console.log(`✅ Found ${records.length} websites to scrape`);
-    console.log(`📐 Resolution filter: ≥${MIN_WIDTH}x${MIN_HEIGHT}\n`);
+    console.log(`Found ${records.length} websites to scrape`);
+    console.log(`Resolution filter: ≥${MIN_WIDTH}x${MIN_HEIGHT}\n`);
     
     // Validate CSV structure
     for (let i = 0; i < records.length; i++) {
       if (!records[i].url || !records[i].folder_name) {
-        console.error(`❌ Invalid CSV row ${i + 1}: missing url or folder_name`);
+        console.error(` Invalid CSV row ${i + 1}: missing url or folder_name`);
         console.error('Expected columns: url, folder_name');
         process.exit(1);
       }
@@ -620,7 +620,7 @@ async function main() {
     
     const proxyServer = getProxy();
     
-    console.log('🚀 Launching browser...');
+    console.log('Launching browser...');
     const browser = await chromium.launch({ 
       headless: HEADLESS,
       args: [
@@ -645,7 +645,7 @@ async function main() {
       
       // Small delay between scrapes
       if (i < records.length - 1) {
-        console.log('\n⏸️  Pausing 3 seconds before next site...');
+        console.log('\n Pausing 3 seconds before next site...');
         await new Promise(resolve => setTimeout(resolve, 3000));
       }
     }
@@ -654,15 +654,15 @@ async function main() {
     
     // Final summary
     console.log('\n' + '='.repeat(80));
-    console.log('📊 FINAL SUMMARY');
+    console.log(' FINAL SUMMARY');
     console.log('='.repeat(80));
     
     const successful = allResults.filter(r => r.success);
     const failed = allResults.filter(r => !r.success);
     
-    console.log(`\n✅ Successfully processed: ${successful.length}/${records.length}`);
-    console.log(`📥 Total images downloaded: ${successful.reduce((sum, r) => sum + r.downloaded, 0)}`);
-    console.log(`📐 Resolution filter: ≥${MIN_WIDTH}x${MIN_HEIGHT}`);
+    console.log(`\n Successfully processed: ${successful.length}/${records.length}`);
+    console.log(` Total images downloaded: ${successful.reduce((sum, r) => sum + r.downloaded, 0)}`);
+    console.log(`Resolution filter: ≥${MIN_WIDTH}x${MIN_HEIGHT}`);
     
     if (successful.length > 0) {
       console.log('\nSuccessful downloads:');
@@ -672,7 +672,7 @@ async function main() {
     }
     
     if (failed.length > 0) {
-      console.log(`\n❌ Failed: ${failed.length}`);
+      console.log(`\n Failed: ${failed.length}`);
       failed.forEach(r => {
         console.log(`  ✗ ${r.folderName}: ${r.error || r.message}`);
       });
@@ -691,10 +691,10 @@ async function main() {
     
     const summaryPath = path.join(baseOutputDir, 'overall-summary.json');
     fs.writeFileSync(summaryPath, JSON.stringify(overallSummary, null, 2));
-    console.log(`\n📄 Overall summary: ${summaryPath}`);
+    console.log(`\n Overall summary: ${summaryPath}`);
     
   } catch (err) {
-    console.error('\n💥 Fatal error:', err);
+    console.error('\nFatal error:', err);
     process.exit(1);
   }
 }
