@@ -89,6 +89,3 @@ overall-summary.json
 2. Feed downloaded folders into classifier.
 3. Get labeled, structured datasets automatically.
 
----
-
-If you want an even more compact README or a version with images/examples, tell me!
