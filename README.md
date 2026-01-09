@@ -1,4 +1,4 @@
-# Image Classifier + Web Scraper (Short README)
+# Image Classifier + Web Scraper 
 
 This repo contains **two separate tools**:
 
